@@ -9,18 +9,21 @@ def resetCluster(vertices: List[Point]):
     for vertex in vertices:
         vertex.cluster = Cluster.Black
 
+
 def commonMembersCounter(firstList, secondList):
     counter = 0
     for firstVertex in firstList:
-        match = [secondVertex for secondVertex in secondList if firstVertex.id == secondVertex.id]
+        match = [
+            secondVertex for secondVertex in secondList if firstVertex.id == secondVertex.id]
         if(len(match) > 0):
             counter += 1
     return counter
 
 
 def process(firstConnections: List[Point], secondConnections: List[Point], constants: GBM_constants):
-    commonNeighbours = commonMembersCounter(firstConnections, secondConnections)
-    if ( abs( commonNeighbours / constants.n - constants.Es) < abs(commonNeighbours / constants.n - constants.Ed)):
+    commonNeighbours = commonMembersCounter(
+        firstConnections, secondConnections)
+    if (abs(commonNeighbours / constants.n - constants.Es) < abs(commonNeighbours / constants.n - constants.Ed)):
         return True
     else:
         return False
@@ -30,23 +33,27 @@ def recoverCluster(vertices: List[Point], edges: List[Connection], constants: GB
     if (len(vertices) <= 0):
         print("error: Any vertices are given")
         return
-    
-    vertices[0].cluster = Cluster.Red # fist vertex assign to first cluster 
+
+    vertices[0].cluster = Cluster.Red  # fist vertex assign to first cluster
 
     for i, firstVertex in enumerate(vertices):
-        firstConnections = [edge.first for edge in edges if edge.second == firstVertex]
-        firstConnections.extend([edge.second for edge in edges if edge.first == firstVertex])
+        firstConnections = [
+            edge.first for edge in edges if edge.second == firstVertex]
+        firstConnections.extend(
+            [edge.second for edge in edges if edge.first == firstVertex])
 
-        for j, secondVertex in enumerate( vertices, start = i + 1):
-            if len([vertex for vertex in firstConnections if vertex == secondVertex]) <= 0 : # if Do not have connection
+        for j, secondVertex in enumerate(vertices, start=i + 1):
+            # if Do not have connection
+            if len([vertex for vertex in firstConnections if vertex == secondVertex]) <= 0:
                 continue
 
-            if secondVertex.cluster != Cluster.Black : # if vertex already assigned 
+            if secondVertex.cluster != Cluster.Black:  # if vertex already assigned
                 continue
 
-
-            secondConnections = [edge.first for edge in edges if edge.second == secondVertex]
-            secondConnections.extend([edge.second for edge in edges if edge.first == secondVertex])
+            secondConnections = [
+                edge.first for edge in edges if edge.second == secondVertex]
+            secondConnections.extend(
+                [edge.second for edge in edges if edge.first == secondVertex])
 
             # process
             if (process(firstConnections, secondConnections, constants) == True):
@@ -57,9 +64,9 @@ def recoverCluster(vertices: List[Point], edges: List[Connection], constants: GB
                 secondVertex.cluster = Cluster.Red
 
 
-#---- Steps ----
+# ---- Steps ----
 # Params
-constants = GBM_constants(0.2, 0.01, 1000) # rs, rd, n  
+constants = GBM_constants(0.2, 0.01, 1000)  # rs, rd, n
 visualize = False
 save = True
 
@@ -73,7 +80,7 @@ recoverCluster(vertices, edges, constants)
 if visualize:
     visualizeRandomGeometricGraph(vertices, edges, "Recovered")
 
-if save :
+if save:
     # Save
     saveToCSV("vertices_recovered", vertices)
     saveToCSV("edges_recovered", edges)

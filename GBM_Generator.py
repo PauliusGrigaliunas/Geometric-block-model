@@ -9,12 +9,14 @@ import math
 def generateRandomPoints(amount: int):
     vertices = []
     for i in range(amount):
-        angle = random.uniform(0,1)*(math.pi*2)
-        vertices.append(Point(id=i, angle=angle, x=math.cos(angle), y=math.sin(angle), cluster=Cluster.Red if (i < amount / 2) else Cluster.Blue ))
+        angle = random.uniform(0, 1)*(math.pi*2)
+        vertices.append(Point(id=i, angle=angle, x=math.cos(angle), y=math.sin(
+            angle), cluster=Cluster.Red if (i < amount / 2) else Cluster.Blue))
     return vertices
 
+
 def addEdgesToGraph(vertices, rs, rd):
-    edges = [] #edges
+    edges = []  # edges
     for i in range(0, len(vertices)-1):
         for j in range(i+1, len(vertices)):
             distanceClockwise = abs(vertices[i].angle - vertices[j].angle)
@@ -31,27 +33,27 @@ def addEdgesToGraph(vertices, rs, rd):
             if (edge.first == vertex and not(edge.second in connectedVertices)):
                 connectedVertices.append(edge.second)
             if (edge.second == vertex and not(edge.first in connectedVertices)):
-                connectedVertices.append(edge.first)  
-                
+                connectedVertices.append(edge.first)
+
     if len(connectedVertices) != len(vertices):
         print("Error: The graph is not fully connected!")
 
     return edges
 
 
-#---- Steps ----
+# ---- Steps ----
 # Params
-constants = GBM_constants(0.2, 0.01, 1000) # rs, rd, n 
+constants = GBM_constants(0.2, 0.01, 1000)  # rs, rd, n
 load = False
 visualize = False
 save = True
 
-if load :
+if load:
     # Load
     vertices = loadFromCSV("vertices")
     edges = loadFromCSV("edges")
-    
-else :
+
+else:
     # New
     vertices = generateRandomPoints(constants.n)
     edges = addEdgesToGraph(vertices, constants.Rs, constants.Rd)
@@ -59,9 +61,7 @@ else :
 if visualize:
     visualizeRandomGeometricGraph(vertices, edges, "Generated")
 
-if save :
+if save:
     # Save
     saveToCSV("vertices", vertices)
     saveToCSV("edges", edges)
-
-
