@@ -28,6 +28,7 @@ class Connection:
         self.second = second
 
 
+folderPath = "data/"
 vertices = []
 
 
@@ -39,14 +40,14 @@ def saveToCSV(name: str, dataList: List):
         else:
             df = pd.DataFrame([[data.first.id, data.second.id]
                               for data in dataList])
-        df.to_csv(name + '.csv',
+        df.to_csv(folderPath + name + '.csv',
                   header=list(vars(dataList[0]).keys()), index=False)
     else:
         return
 
 
 def loadFromCSV(verticesName: str):
-    newData = pd.read_csv(verticesName + '.csv')
+    newData = pd.read_csv(folderPath + verticesName + '.csv')
     elements = []
     header = list(vars(newData.columns)['_data'])
     if (header == ['id', 'angle', 'x', 'y', 'cluster']):
@@ -86,4 +87,4 @@ def visualizeRandomGeometricGraph(vertices: List[Point], edges: List[Connection]
                  edge.first.y, edge.second.y], c='green')
 
     plt.show()
-    fig.savefig(pictureName + '.png')
+    fig.savefig(folderPath + pictureName + '.png')
