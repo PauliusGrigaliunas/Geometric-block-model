@@ -1,22 +1,13 @@
 from dataManager import loadFromCSV
 
 
-def getAccuracy():
-    createdVertices = loadFromCSV("vertices")
-    recoveredVertices = loadFromCSV("vertices_recovered")
-
-    if len(createdVertices) != len(recoveredVertices) or len(createdVertices) == 0:
-        print("Error: vertices sizes are diffrent from data sets!")
-        return
-
+def getAccuracy(a, b):
     counter = 0
-    for createdVertex in createdVertices:
-        recovered = [
-            recoveredVertex for recoveredVertex in recoveredVertices if recoveredVertex.id == createdVertex.id]
-        if (createdVertex.cluster == recovered[0].cluster):
-            counter += 1
+    for vertexA in a:
+        for vertexB in b:
+            if vertexA.id == vertexB.id:
+                counter += 1
+                break
 
-    return counter / len(createdVertices)
+    return  counter/len(a)
 
-
-print("accuracy: " + str(getAccuracy()))

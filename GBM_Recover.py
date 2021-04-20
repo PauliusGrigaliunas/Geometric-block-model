@@ -2,6 +2,7 @@ from typing import List
 
 from matplotlib.pyplot import connect
 from GBM_Constants import GBM_constants
+from GBM_Comparator import getAccuracy
 from dataManager import Cluster, Connection, Point, loadFromCSV, saveToCSV, visualizeRandomGeometricGraph
 
 
@@ -29,12 +30,15 @@ def process(firstConnections: List[Point], secondConnections: List[Point], const
         return False
 
 
-def recoverCluster(vertices: List[Point], edges: List[Connection], constants: GBM_constants):
+def recoverCluster(vertices: List[Point],  edges: List[Connection], constants: GBM_constants):
     if (len(vertices) <= 0):
         print("error: Any vertices are given")
         return
 
-    vertices[0].cluster = Cluster.Red  # fist vertex assign to first cluster
+    V1 = []
+    V2 = []
+
+    V1.append(vertices[0])  # fist vertex assign to first cluster
 
     for i, firstVertex in enumerate(vertices):
         firstConnections = [
@@ -43,11 +47,13 @@ def recoverCluster(vertices: List[Point], edges: List[Connection], constants: GB
             [edge.second for edge in edges if edge.first == firstVertex])
 
         for j, secondVertex in enumerate(vertices, start=i + 1):
+
             # if Do not have connection
-            if len([vertex for vertex in firstConnections if vertex == secondVertex]) <= 0:
+            if len([vertex for vertex in firstConnections if vertex.id == secondVertex.id]) <= 0:
                 continue
 
-            if secondVertex.cluster != Cluster.Black:  # if vertex already assigned
+            # if vertex already assigned
+            if len([vertex for vertex in V1 if vertex.id == secondVertex.id]) > 0 or len([vertex for vertex in V2 if vertex.id == secondVertex.id]) > 0:
                 continue
 
             secondConnections = [
@@ -56,12 +62,20 @@ def recoverCluster(vertices: List[Point], edges: List[Connection], constants: GB
                 [edge.second for edge in edges if edge.first == secondVertex])
 
             # process
-            if (process(firstConnections, secondConnections, constants) == True):
-                secondVertex.cluster = firstVertex.cluster
-            elif firstVertex.cluster == Cluster.Red:
-                secondVertex.cluster = Cluster.Blue
-            elif firstVertex.cluster == Cluster.Blue:
-                secondVertex.cluster = Cluster.Red
+            if process(firstConnections, secondConnections, constants) == True:
+                # print("true")
+                if len([vertex for vertex in V1 if vertex.id == firstVertex.id]) > 0:
+                    V1.append(secondVertex)
+                else:
+                    V2.append(secondVertex)
+            else:
+                # print("false")
+                if len([vertex for vertex in V1 if vertex.id == firstVertex.id]) > 0:
+                    V2.append(secondVertex)
+                else:
+                    V1.append(secondVertex)
+
+    return V1, V2
 
 
 # ---- Steps ----
@@ -69,18 +83,28 @@ def recoverCluster(vertices: List[Point], edges: List[Connection], constants: GB
 constants = GBM_constants(0.2, 0.01, 1000)  # rs, rd, n
 visualize = False
 save = True
+compare = True
 
 # Load
-vertices = loadFromCSV("vertices")
+vertices = []
+V1 = loadFromCSV("V1")
+V2 = loadFromCSV("V2")
+vertices.extend(V1)
+vertices.extend(V2)
 edges = loadFromCSV("edges")
 
-resetCluster(vertices)
-recoverCluster(vertices, edges, constants)
+V1r, V2r = recoverCluster(vertices, edges, constants)
+
 
 if visualize:
-    visualizeRandomGeometricGraph(vertices, edges, "Recovered")
+    visualizeRandomGeometricGraph(V1, V2, edges, "Generated")
+
+if compare:
+    print("accuracy (V1 with V1r): " + str(getAccuracy(V1, V1r)))
+    print("accuracy (V2 with V2r): " + str(getAccuracy(V2, V2r)))
 
 if save:
     # Save
-    saveToCSV("vertices_recovered", vertices)
-    saveToCSV("edges_recovered", edges)
+    saveToCSV("V1_recover", V1r)
+    saveToCSV("V2_recover", V2r)
+    saveToCSV("edges_recover", edges)

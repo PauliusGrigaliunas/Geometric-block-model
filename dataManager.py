@@ -14,12 +14,11 @@ class Cluster(Enum):
 
 
 class Point:
-    def __init__(self, id: int, angle: float, x: float, y: float, cluster: Cluster):
+    def __init__(self, id: int, angle: float, x: float, y: float):
         self.id = id
         self.angle = angle
         self.x = x
         self.y = y
-        self.cluster = cluster
 
 
 class Connection:
@@ -35,8 +34,8 @@ vertices = []
 def saveToCSV(name: str, dataList: List):
     if len(dataList) > 0:
         if (list(vars(dataList[0]).keys())[0] == "id"):
-            df = pd.DataFrame([[data.id, data.angle, data.x, data.y, 1 if data.cluster.name ==
-                              "Red" else 2 if data.cluster.name == "Blue" else 0] for data in dataList])
+            df = pd.DataFrame([[data.id, data.angle, data.x, data.y]
+                              for data in dataList])
         else:
             df = pd.DataFrame([[data.first.id, data.second.id]
                               for data in dataList])
@@ -50,12 +49,12 @@ def loadFromCSV(verticesName: str):
     newData = pd.read_csv(folderPath + verticesName + '.csv')
     elements = []
     header = list(vars(newData.columns)['_data'])
-    if (header == ['id', 'angle', 'x', 'y', 'cluster']):
+    if (header == ['id', 'angle', 'x', 'y']):
         for line in newData.values:
             elements.append(
-                Point(id=line[0], angle=line[1], x=line[2], y=line[3], cluster=Cluster(line[4])))
+                Point(id=line[0], angle=line[1], x=line[2], y=line[3]))
         global vertices
-        vertices = elements
+        vertices.extend(elements)
         return elements
     elif (header == ['first', 'second']):
         for line in newData.values:
@@ -67,10 +66,14 @@ def loadFromCSV(verticesName: str):
         return []
 
 
-def visualizeRandomGeometricGraph(vertices: List[Point], edges: List[Connection], pictureName):
-    x = [v.x for v in vertices]
-    y = [v.y for v in vertices]
-    colors = [v.cluster.name for v in vertices]
+def visualizeRandomGeometricGraph(V1: List[Point], V2: List[Point], edges: List[Connection], pictureName):
+    x = [v.x for v in V1]
+    y = [v.y for v in V1]
+    colors = ["Red" for v in V1]
+
+    x.extend([v.x for v in V2])
+    y.extend([v.y for v in V2])
+    colors.extend(["Blue" for v in V2])
 
     # draw dashed circle
     circle = plt.Circle((0, 0), 1, color='black',
